@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>اختبار ريتاج ✨</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #fbcfe8, #f472b6, #fb7185);
+      color: #334155;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 25px;
+      padding: 25px;
+      width: 90%;
+      max-width: 380px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+
+    .hidden { display: none !important; }
+
+    input, textarea {
+      width: 80%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1.5px solid #f472b6;
+      text-align: center;
+      font-size: 15px;
+      outline: none;
+      margin: 10px 0;
+      font-family: inherit;
+    }
+
+    textarea { height: 80px; resize: none; }
+
+    button {
+      width: 85%;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      background: #ec4899;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      width: 90%;
+      margin: auto;
+    }
+
+    .skip-btn { background: #94a3b8; }
+    .error { color: #e11d48; font-size: 14px; }
+
+    /* منطقة البزل */
+    .puzzle-wrapper {
+      position: relative;
+      width: 300px;
+      height: 200px;
+      margin: 15px auto;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 2px dashed #f472b6;
+      background: #ffe4e6;
+      transition: all 0.5s ease;
+    }
+
+    .puzzle-wrapper.solved {
+      border: 3px solid #ec4899;
+      box-shadow: 0 0 25px #ec4899, 0 0 50px #f472b6, 0 0 75px #ffffff;
+      animation: pulseGlow 1.5s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px #ec4899, 0 0 30px #f472b6; }
+      100% { box-shadow: 0 0 30px #ec4899, 0 0 60px #f472b6, 0 0 90px #fff; }
+    }
+
+    .puzzle-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 100px);
+      gap: 4px;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0; left: 0;
+      z-index: 2;
+    }
+
+    .puzzle-piece {
+      width: 100%;
+      height: 100%;
+      background-image: url('shahd.jpg');
+      background-size: 300% 200%;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 2px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-sizing: border-box;
+      position: relative;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .puzzle-piece.selected {
+      border: 3px solid #ec4899 !important;
+      filter: brightness(1.15);
+      transform: scale(0.94);
+      box-shadow: 0 0 12px #ec4899;
+    }
+
+    .full-image-preview {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      transition: opacity 0.8s ease-in-out;
+    }
+
+    .full-image-preview.show { 
+      opacity: 1; 
+      z-index: 3;
+    }
+
+    .result-title { color: #475569; font-size: 24px; margin-bottom: 15px; }
+    .inner-pink-box {
+      border: 2px dashed #f472b6;
+      background: #fff5f7;
+      border-radius: 20px;
+      padding: 20px;
+    }
+    #res-user-title { color: #e11d48; font-size: 20px; margin: 0; }
+    .score-percent { font-size: 22px; font-weight: bold; color: #475569; margin: 10px 0 5px; }
+    .score-comment { font-size: 13px; color: #db2777; margin-bottom: 15px; font-weight: 600; }
+    .dashed-line { border: none; border-top: 1px dashed #f472b6; margin: 15px 0; }
+    .msg-header { color: #e11d48; margin: 5px 0; }
+    .sweet-quote { font-size: 14px; line-height: 1.6; color: #475569; font-style: italic; word-break: break-word; }
+    .screenshot-note {
+      background: #ffe4e6;
+      color: #e11d48;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .next-stage-btn { background: #ab47bc; margin-top: 15px; }
+
+    .scratch-grid { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+    .scratch-container {
+      position: relative;
+      width: 100%;
+      height: 55px;
+      background: #fff;
+      border: 2px solid #f472b6;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .num-badge {
+      position: absolute; right: 10px; background: #ec4899; color: #fff;
+      width: 22px; height: 22px; border-radius: 50%; font-size: 12px;
+      display: flex; align-items: center; justify-content: center; font-weight: bold;
+    }
+    .secret-text { font-size: 18px; font-weight: bold; color: #db2777; }
+    .scratch-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; }
+
+    .emojis { font-size: 40px; margin: 10px 0; }
+    .hint-btn { background: #f43f5e; }
+    .secret-box {
+      margin-top: 15px; padding: 12px; background: #ffe4e6;
+      border: 1px solid #f43f5e; border-radius: 10px; color: #be123c; font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. شاشة الباسورد -->
+  <div class="card" id="pass-screen">
+    <h2>🔒 ادخل الرقم السري</h2>
+    <input type="password" id="pass-input" placeholder="اليوم/الشهر/السنة">
+    <button onclick="checkPass()">دخول ✨</button>
+    <p id="pass-err" class="error hidden">الرقم السري غير صحيح!</p>
+  </div>
+
+  <!-- 2. شاشة الاسم -->
+  <div class="card hidden" id="name-screen">
+    <h2>✨ مرحباً بك!</h2>
+    <p>ادخل اسمك أولاً لبدء الاختبار مع ريتاج:</p>
+    <input type="text" id="visitor-name" placeholder="اسمك الكريم">
+    <button onclick="startGame()">بدء التحدي 🚀</button>
+  </div>
+
+  <!-- 3. شاشة البزل -->
+  <div class="card hidden" id="puzzle-screen">
+    <h2>🧩 رتب صورة ريتاج</h2>
+    <p style="font-size: 13px; color: #64748b;">اضغط القطعة الأولى، ثم اضغط القطعة الثانية لتبديلهما!</p>
+    
+    <div class="puzzle-wrapper" id="puzzle-wrapper">
+      <div class="puzzle-grid" id="puzzle-grid"></div>
+      <img src="shahd.jpg" id="full-shahd-img" class="full-image-preview" alt="ريتاج">
+    </div>
+
+    <p id="puzzle-success" class="error hidden" style="color: #10b981; font-weight: bold; font-size: 16px;">✨ ممتاز! رتبت الصورة صح ✨</p>
+    <button id="skip-puzzle-btn" onclick="forceSolvePuzzle()" style="margin-top:10px; background:#64748b; font-size:13px;">تخطي / تأكيد الترتيب 🚀</button>
+  </div>
+
+  <!-- 4. شاشة الأسئلة -->
+  <div class="card hidden" id="game-card">
+    <div class="level-indicator" id="level-title">المستوى 1 من 5</div>
+    <div class="emojis" id="emoji-display">🍝 🍲 ✨ 😋</div>
+    <p class="question" id="question-text"></p>
+    
+    <div id="input-section">
+      <input type="text" id="user-answer" placeholder="اكتب الإجابة هنا..." autocomplete="off">
+      <div class="btn-group">
+        <button onclick="checkAnswer()">إرسال ✨</button>
+        <button onclick="skipQuestion()" class="skip-btn">تخطي ➡️</button>
+      </div>
+    </div>
+
+    <div id="hint-section" class="hidden">
+      <button onclick="showHint()" class="hint-btn">عرض التلميح ✨</button>
+      <div id="secret-message" class="hidden secret-box">
+        اللغز ده ملوش غير حل واحد: المبرمج هنا ممتن جداً للصدفة اللي خليته يتعرف عليكي.
+      </div>
+      <button onclick="goToWriteMessage()" class="hidden" id="next-res-btn" style="margin-top:15px;">الخطوة التالية ✉️</button>
+    </div>
+
+    <p id="error-msg" class="error hidden">إجابة مش مضبوطة.. فكر تاني! 😅</p>
+  </div>
+
+  <!-- 5. شاشة كتابة الرسالة -->
+  <div class="card hidden" id="write-msg-screen">
+    <h2>💌 اكتب كلمة حلوة لريتاج</h2>
+    <p style="font-size: 13px; color: #64748b;">رسالتك هتظهر جوة كارت النتيجة عشان تبعتهالها سكرين!</p>
+    <textarea id="user-sweet-msg" placeholder="اكتب رسالتك هنا..."></textarea>
+    <button onclick="finishGame()">عرض النتيجة النهائية 📊</button>
+  </div>
+
+  <!-- 6. شاشة النتيجة النهائية -->
+  <div class="card result-card hidden" id="result-screen">
+    <h1 class="result-title">🎉 النتيجة النهائية 🎉</h1>
+    
+    <div class="inner-pink-box">
+      <h3 id="res-user-title">اختبار [اسم الزائر] لريتاج! ✨</h3>
+      <div class="score-percent" id="res-score">النتيجة: 100%</div>
+      <p class="score-comment" id="res-comment"></p>
+      
+      <hr class="dashed-line">
+
+      <h4 class="msg-header">رسالتك لريتاج:</h4>
+      <p class="sweet-quote" id="display-sweet-msg"></p>
+    </div>
+
+    <div class="screenshot-note">
+      📸 خدي اسكرين شوت للكارت ده وابعتيه لريتاج!
+    </div>
+
+    <button onclick="showScratchSection()" class="next-stage-btn">في مفاجأة تانية تحت.. اضغط هنا 👇</button>
+  </div>
+
+  <!-- 7. قسم كروت الشخبطة -->
+  <div class="card hidden" id="scratch-screen">
+    <h2>✨ شخبط واكشف المستخبي بالترتيب ✨</h2>
+    <p style="font-size: 13px; color: #64748b;">امسح اللون الأملس من على المربعات من 1 لـ 5</p>
+
+    <div class="scratch-grid">
+      <div class="scratch-container">
+        <span class="num-badge">1</span>
+        <div class="secret-text">بحبك ❤</div>
+        <canvas class="scratch-canvas" id="canvas1"></canvas>
+      </div>
+      <div class="scratch-container">
+        <span class="num-badge">2</span>
+        <div class="secret-text">عشان</div>
+        <canvas class="scratch-canvas" id="canvas2"></canvas>
+      </div>
+      <div class="scratch-container">
+        <span class="num-badge">3</span>
+        <div class="secret-text">مهتمة</div>
+        <canvas class="scratch-canvas" id="canvas3"></canvas>
+      </div>
+      <div class="scratch-container">
+        <span class="num-badge">4</span>
+        <div class="secret-text">تجوبي علي</div>
+        <canvas class="scratch-canvas" id="canvas4"></canvas>
+      </div>
+      <div class="scratch-container">
+        <span class="num-badge">5</span>
+        <div class="secret-text">أسألتي🌝</div>
+        <canvas class="scratch-canvas" id="canvas5"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let userName = "";
+    let correctAnswersCount = 0;
+
+    function checkPass() {
+      const p = document.getElementById("pass-input").value.trim();
+      if (p === "6/7/2010" || p === "6-7-2010" || p === "06/07/2010" || p === "672010") {
+        document.getElementById("pass-screen").classList.add("hidden");
+        document.getElementById("name-screen").classList.remove("hidden");
+      } else {
+        document.getElementById("pass-err").classList.remove("hidden");
+      }
+    }
+
+    function startGame() {
+      userName = document.getElementById("visitor-name").value.trim() || "زائرنا اللطيف";
+      document.getElementById("name-screen").classList.add("hidden");
+      document.getElementById("puzzle-screen").classList.remove("hidden");
+      initPuzzle();
+    }
+
+    let pieceOrder = [0, 1, 2, 3, 4, 5];
+    let selectedSlot = null;
+    let isTransitioning = false;
+
+    function initPuzzle() {
+      pieceOrder = [0, 1, 2, 3, 4, 5];
+      do {
+        pieceOrder.sort(() => Math.random() - 0.5);
+      } while (pieceOrder.every((val, index) => val === index));
+
+      renderPuzzle();
+    }
+
+    function renderPuzzle() {
+      const grid = document.getElementById("puzzle-grid");
+      grid.innerHTML = "";
+
+      pieceOrder.forEach((posIndex, currentSlot) => {
+        const piece = document.createElement("button");
+        piece.type = "button";
+        piece.className = "puzzle-piece";
+        
+        const origRow = Math.floor(posIndex / 3);
+        const origCol = posIndex % 3;
+        piece.style.backgroundPosition = `${origCol * 50}% ${origRow * 100}%`;
+
+        if (selectedSlot === currentSlot) {
+          piece.classList.add("selected");
+        }
+
+        piece.onclick = function(e) {
+          e.preventDefault();
+          if (!isTransitioning) handlePieceClick(currentSlot);
+        };
+
+        grid.appendChild(piece);
+      });
+    }
+
+    function handlePieceClick(slot) {
+      if (selectedSlot === null) {
+        selectedSlot = slot;
+      } else if (selectedSlot === slot) {
+        selectedSlot = null;
+      } else {
+        let temp = pieceOrder[selectedSlot];
+        pieceOrder[selectedSlot] = pieceOrder[slot];
+        pieceOrder[slot] = temp;
+        selectedSlot = null;
+      }
+      renderPuzzle();
+      checkPuzzleSolved();
+    }
+
+    function checkPuzzleSolved() {
+      const isSolved = pieceOrder.every((val, index) => val === index);
+      if (isSolved && !isTransitioning) {
+        triggerPuzzleSuccess();
+      }
+    }
+
+    function forceSolvePuzzle() {
+      if (!isTransitioning) {
+        triggerPuzzleSuccess();
+      }
+    }
+
+    function triggerPuzzleSuccess() {
+      isTransitioning = true;
+      const wrapper = document.getElementById("puzzle-wrapper");
+      const grid = document.getElementById("puzzle-grid");
+      const fullImg = document.getElementById("full-shahd-img");
+
+      wrapper.classList.add("solved");
+      grid.style.opacity = "0";
+      fullImg.classList.add("show");
+
+      document.getElementById("puzzle-success").classList.remove("hidden");
+
+      setTimeout(() => {
+        document.getElementById("puzzle-screen").classList.add("hidden");
+        document.getElementById("game-card").classList.remove("hidden");
+        loadLevel();
+      }, 1500);
+    }
+
+    const levels = [
+      {
+        level: 1,
+        emojis: "🍝 🍲 ✨ 😋",
+        question: "أكلة ريتاج المفضلة؟",
+        validAnswers: ["مكرونة بشاميل", "بشاميل", "محشي", "المكرونة البشاميل"]
+      },
+      {
+        level: 2,
+        emojis: "🥤 ⚡ 🧊 💙",
+        question: "مشروب ريتاج المفضل؟",
+        validAnswers: ["تويست", "ريدبول", "ريد بول", "التويست"]
+      },
+      {
+        level: 3,
+        emojis: "🏡 👵 ❤️ 🧕",
+        question: "مكان ريتاج بتحب تروحو؟",
+        validAnswers: ["الترب", "عند جدتها", "جدتها", "الترب عند جدتها"]
+      },
+      {
+        level: 4,
+        emojis: "🖤 ✨ 🌑 🕶️",
+        question: "لون ريتاج المفضل؟",
+        validAnswers: ["اسود", "الأسود", "الاسود"]
+      },
+      {
+        level: 5,
+        emojis: "💻 ☕ ✨ 🤫",
+        question: "حل اللغز ده ملوش إجابة.. تفتكر إيه المعنى؟",
+        isSecret: true
+      }
+    ];
+
+    let currentLevel = 0;
+
+    function loadLevel() {
+      const levelData = levels[currentLevel];
+      document.getElementById("level-title").innerText = `المستوى ${levelData.level} من 5`;
+      document.getElementById("emoji-display").innerText = levelData.emojis;
+      document.getElementById("question-text").innerText = levelData.question;
+      document.getElementById("user-answer").value = "";
+      document.getElementById("error-msg").classList.add("hidden");
+
+      if (levelData.isSecret) {
+        document.getElementById("input-section").classList.add("hidden");
+        document.getElementById("hint-section").classList.remove("hidden");
+      }
+    }
+
+    function checkAnswer() {
+      const input = document.getElementById("user-answer").value.trim().toLowerCase();
+      const levelData = levels[currentLevel];
+
+      const isCorrect = levelData.validAnswers.some(ans => input.includes(ans.toLowerCase()));
+
+      if (isCorrect) {
+        correctAnswersCount++;
+        nextLevel();
+      } else {
+        document.getElementById("error-msg").classList.remove("hidden");
+      }
+    }
+
+    function skipQuestion() {
+      nextLevel();
+    }
+
+    function nextLevel() {
+      currentLevel++;
+      if (currentLevel < levels.length) {
+        loadLevel();
+      }
+    }
+
+    function showHint() {
+      document.getElementById("secret-message").classList.remove("hidden");
+      document.getElementById("next-res-btn").classList.remove("hidden");
+    }
+
+    function goToWriteMessage() {
+      document.getElementById("game-card").classList.add("hidden");
+      document.getElementById("write-msg-screen").classList.remove("hidden");
+    }
+
+    function finishGame() {
+      const userMsg = document.getElementById("user-sweet-msg").value.trim() || "كل الدعم والتوفيق ليكي دايماً! ✨";
+      document.getElementById("display-sweet-msg").innerText = `"${userMsg}"`;
+
+      document.getElementById("write-msg-screen").classList.add("hidden");
+      document.getElementById("result-screen").classList.remove("hidden");
+
+      const scorePercent = Math.round((correctAnswersCount / 4) * 100);
+      document.getElementById("res-user-title").innerText = `اختبار ${userName} لريتاج! ✨`;
+      document.getElementById("res-score").innerText = `النتيجة: ${scorePercent}%`;
+
+      let comment = "";
+      if (scorePercent === 100) comment = "حافظ حافظة تفاصيل ريتاج بالملي! 🎯🔥";
+      else if (scorePercent >= 50) comment = "عاش! عارف حاجات كتير عن ريتاج بس محتاج تلاحظ أكتر 😉";
+      else comment = "محتاج تتعرف على ريتاج من جديد لأنك لسه معرفتهاش صح 😜";
+      
+      document.getElementById("res-comment").innerText = comment;
+    }
+
+    function showScratchSection() {
+      document.getElementById("result-screen").classList.add("hidden");
+      document.getElementById("scratch-screen").classList.remove("hidden");
+      initScratchCards();
+    }
+
+    function initScratchCards() {
+      for (let i = 1; i <= 5; i++) {
+        const canvas = document.getElementById(`canvas${i}`);
+        const ctx = canvas.getContext('2d');
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let isScratching = false;
+
+        const scratch = (e) => {
+          if (!isScratching) return;
+          const rect = canvas.getBoundingClientRect();
+          const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+          const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+          ctx.globalCompositeOperation = 'destination-out';
+          ctx.beginPath();
+          ctx.arc(x, y, 15, 0, Math.PI * 2);
+          ctx.fill();
+        };
+
+        canvas.addEventListener('mousedown', () => isScratching = true);
+        canvas.addEventListener('mouseup', () => isScratching = false);
+        canvas.addEventListener('mousemove', scratch);
+
+        canvas.addEventListener('touchstart', () => isScratching = true);
+        canvas.addEventListener('touchend', () => isScratching = false);
+        canvas.addEventListener('touchmove', scratch);
+      }
+    }
+  </script>
+</body>
+</html>
